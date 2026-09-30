@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorPrimary">@color/copper_500</item>
+        <item name="android:colorAccent">@color/copper_500</item>
+        <item name="android:windowBackground">@color/sand_50</item>
+        <item name="android:statusBarColor">@color/sand_50</item>
+        <item name="android:navigationBarColor">@color/sand_50</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

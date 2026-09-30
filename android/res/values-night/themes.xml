@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="android:Theme.Material.NoActionBar">
+        <item name="android:colorPrimary">@color/copper_500</item>
+        <item name="android:colorAccent">@color/copper_500</item>
+        <item name="android:windowBackground">@color/mist_950</item>
+        <item name="android:statusBarColor">@color/mist_950</item>
+        <item name="android:navigationBarColor">@color/mist_950</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

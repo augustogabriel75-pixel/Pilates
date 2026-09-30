@@ -136,6 +136,41 @@ As regras de negócio (antecedência, validade da reposição, janela de check-i
 
 ---
 
+## Aplicativo Android (APK)
+
+A pasta `android/` contém o app nativo **Cativar Pilates**. É uma casca leve (cerca de 30 KB) que abre o sistema em tela cheia usando o WebView do Android. O **servidor continua sendo necessário**, porque é nele que ficam o banco de dados e a lógica. Assim todos os celulares compartilham os mesmos dados.
+
+**Como funciona**
+- Na primeira abertura, o app pede o **endereço do servidor**. Para trocar depois, use o link *Alterar servidor* na tela de login ou na tela de erro de conexão.
+- O login fica salvo (cookie HttpOnly do WebView). O botão voltar do Android navega entre as telas.
+- O tema claro/escuro acompanha o do celular.
+- Links externos (WhatsApp, telefone, outros sites) abrem fora do app.
+- O app nunca aceita certificado HTTPS inválido. Endereços `http://` fora da rede local mostram um aviso.
+- Android 8.0 (API 26) ou superior.
+
+**Onde rodar o servidor**
+1. **Internet (recomendado):** hospede o sistema com HTTPS (VPS, Railway, Render, Fly.io…). Se usar SQLite, o disco precisa ser persistente. No app, informe `https://seu-dominio`.
+2. **Rede Wi-Fi do estúdio:** em um computador do estúdio, rode `npm run build` e depois `npm start` com a variável `COOKIE_SECURE=false`:
+   - Linux/macOS: `COOKIE_SECURE=false npm start`
+   - Windows (PowerShell): `$env:COOKIE_SECURE="false"; npm start`
+
+   No app, informe `http://IP-DO-COMPUTADOR:3000` (ex.: `http://192.168.0.10:3000`). Sem `COOKIE_SECURE=false`, o login não funciona em `http://`.
+
+**Instalar no celular:** copie o `.apk` para o aparelho, abra o arquivo e permita *Instalar apps desconhecidos* para o aplicativo usado (Arquivos, Chrome, WhatsApp…).
+
+**Gerar o APK** (Ubuntu/Debian, sem Android Studio):
+```bash
+sudo apt-get install -y openjdk-17-jdk aapt zipalign apksigner dalvik-exchange
+./android/build.sh          # saída: android/dist/EspacoCativarPilates-vX.Y.Z.apk
+```
+Também dá para gerar pelo GitHub em *Actions → Android APK → Run workflow*.
+
+- **Nova versão:** aumente `VERSION_CODE` e `VERSION_NAME` em `android/version.properties`.
+- **Assinatura:** na primeira execução, o script cria `android/keystore/cativar-release.jks` e salva a senha em `keystore.properties`. Os dois ficam fora do git. **Guarde esse keystore em local seguro**: o Android só instala uma atualização por cima da anterior se ela for assinada com a mesma chave.
+- **GitHub Actions:** para usar a mesma chave, cadastre os secrets `ANDROID_KEYSTORE_BASE64` (`base64 -w0 cativar-release.jks`) e `ANDROID_KEYSTORE_PASSWORD`.
+
+---
+
 ## Scripts
 
 | Comando | Ação |
