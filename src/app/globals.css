@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root { color-scheme: light; }
+  .dark { color-scheme: dark; }
+  body {
+    @apply bg-sand-50 text-mist-800 antialiased dark:bg-mist-950 dark:text-mist-100;
+  }
+  .font-serif, h1, h2, h3 { font-variant-numeric: lining-nums; }
+  h1, h2, h3 { @apply font-serif tracking-tight text-mist-900 dark:text-sand-50; }
+  :focus-visible { @apply outline-none ring-2 ring-copper-400 ring-offset-2 ring-offset-sand-50 dark:ring-offset-mist-950; }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-sand-200/80 bg-white/90 shadow-soft dark:border-mist-800 dark:bg-mist-900;
+  }
+  .card-pad { @apply p-4 sm:p-6; }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-sm { @apply px-3 py-1.5 text-xs rounded-lg; }
+  .btn-primary { @apply btn bg-copper-500 text-white hover:bg-copper-600 active:bg-copper-700; }
+  .btn-secondary {
+    @apply btn border border-sand-300 bg-white text-mist-700 hover:bg-sand-100
+           dark:border-mist-700 dark:bg-mist-850 dark:text-mist-100 dark:hover:bg-mist-800;
+  }
+  .btn-ghost { @apply btn text-mist-600 hover:bg-sand-100 dark:text-mist-300 dark:hover:bg-mist-800; }
+  .btn-danger { @apply btn bg-red-600/90 text-white hover:bg-red-700; }
+  .btn-success { @apply btn bg-emerald-600 text-white hover:bg-emerald-700; }
+
+  .label { @apply mb-1.5 block text-xs font-medium uppercase tracking-wide text-mist-500 dark:text-mist-400; }
+  .input {
+    @apply w-full rounded-xl border border-sand-300 bg-white px-3.5 py-2.5 text-sm text-mist-800 placeholder:text-mist-400
+           focus:border-copper-400 focus:outline-none focus:ring-2 focus:ring-copper-200
+           dark:border-mist-700 dark:bg-mist-850 dark:text-mist-100 dark:focus:ring-copper-800;
+  }
+  textarea.input { @apply min-h-[88px]; }
+
+  .badge { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium; }
+
+  .table { @apply w-full text-left text-sm; }
+  .table th { @apply px-4 py-3 text-xs font-medium uppercase tracking-wide text-mist-500 dark:text-mist-400; }
+  .table td { @apply border-t border-sand-100 px-4 py-3 align-middle dark:border-mist-800; }
+
+  .tab { @apply whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-mist-500 hover:bg-sand-100 dark:text-mist-400 dark:hover:bg-mist-800; }
+  .tab-active { @apply bg-copper-500 text-white hover:bg-copper-500 dark:text-white dark:hover:bg-copper-500; }
+}

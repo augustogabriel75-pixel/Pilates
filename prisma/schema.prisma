@@ -1,0 +1,222 @@
+// Espaço Cativar Pilates — esquema do banco de dados
+// Banco padrão: SQLite. Para PostgreSQL basta trocar o provider para "postgresql"
+// e ajustar DATABASE_URL (os campos "enum" são strings validadas na aplicação).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Usuário com acesso ao sistema. role: ADMIN | PATIENT
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  username     String?   @unique
+  passwordHash String
+  role         String    @default("PATIENT")
+  active       Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  patient    Patient?
+  evolutions EvolutionRecord[] @relation("EvolutionAuthor")
+}
+
+/// Cadastro do paciente (pode ou não ter acesso ao portal via User)
+model Patient {
+  id               String    @id @default(cuid())
+  userId           String?   @unique
+  user             User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  fullName         String
+  email            String?
+  phone            String?
+  cpf              String?   @unique
+  birthDate        DateTime?
+  address          String?
+  emergencyContact String?
+  profession       String?
+  medicalHistory   String?
+  medications      String?
+  goals            String?
+  plan             String?
+  monthlyFee       Float     @default(0)
+  dueDay           Int       @default(10)
+  active           Boolean   @default(true)
+  notes            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  enrollments   Enrollment[]
+  bookings      Booking[]
+  payments      Payment[]
+  evolutions    EvolutionRecord[]
+  prescriptions Prescription[]
+
+  @@index([fullName])
+}
+
+/// Turma / horário recorrente (ex: Pilates Aparelho seg e qua às 08:00)
+model ClassGroup {
+  id          String    @id @default(cuid())
+  name        String
+  modality    String
+  /// Dias da semana separados por vírgula (0 = domingo ... 6 = sábado)
+  weekdays    String
+  /// "HH:MM" no fuso do estúdio
+  startTime   String
+  durationMin Int       @default(50)
+  capacity    Int       @default(3)
+  instructor  String?
+  startDate   DateTime
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  sessions    Session[]
+  enrollments Enrollment[]
+}
+
+/// Matrícula fixa de um paciente em uma turma recorrente
+model Enrollment {
+  id           String     @id @default(cuid())
+  classGroupId String
+  classGroup   ClassGroup @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
+  patientId    String
+  patient      Patient    @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@unique([classGroupId, patientId])
+}
+
+/// Aula (ocorrência concreta na agenda). status: SCHEDULED | CANCELLED
+model Session {
+  id           String      @id @default(cuid())
+  classGroupId String?
+  classGroup   ClassGroup? @relation(fields: [classGroupId], references: [id], onDelete: SetNull)
+  title        String
+  modality     String
+  startsAt     DateTime
+  endsAt       DateTime
+  capacity     Int
+  status       String      @default("SCHEDULED")
+  notes        String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  bookings Booking[]
+
+  @@unique([classGroupId, startsAt])
+  @@index([startsAt])
+}
+
+/// Agendamento de um paciente em uma aula.
+/// status: SCHEDULED | CONFIRMED | CHECKED_IN | ATTENDED | ABSENT | CANCELLED | RESCHEDULED
+model Booking {
+  id                String    @id @default(cuid())
+  sessionId         String
+  session           Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  patientId         String
+  patient           Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  status            String    @default("SCHEDULED")
+  /// Aula de reposição / reagendada
+  isMakeup          Boolean   @default(false)
+  /// Cancelamento com antecedência gera direito a reposição
+  makeupAvailable   Boolean   @default(false)
+  rescheduledFromId String?   @unique
+  rescheduledFrom   Booking?  @relation("Reschedule", fields: [rescheduledFromId], references: [id], onDelete: SetNull)
+  rescheduledTo     Booking?  @relation("Reschedule")
+  confirmedAt       DateTime?
+  checkedInAt       DateTime?
+  validatedAt       DateTime?
+  cancelledAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([sessionId, status])
+  @@index([patientId, status])
+}
+
+/// Mensalidade. status: PAID | PENDING | LATE
+model Payment {
+  id        String    @id @default(cuid())
+  patientId String
+  patient   Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  year      Int
+  month     Int
+  amount    Float
+  dueDate   DateTime
+  status    String    @default("PENDING")
+  paidAt    DateTime?
+  method    String?
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([patientId, year, month])
+  @@index([year, month])
+}
+
+/// Prontuário eletrônico — registro de evolução diária
+model EvolutionRecord {
+  id                 String   @id @default(cuid())
+  patientId          String
+  patient            Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  authorId           String?
+  author             User?    @relation("EvolutionAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  date               DateTime
+  evolutionNotes     String
+  /// Escala de dor (EVA) 0-10
+  painLevel          Int?
+  painLocation       String?
+  posturalAssessment String?
+  observations       String?
+  /// Orientação visível ao paciente no portal (o restante é privado)
+  patientGuidance    String?
+  createdAt          DateTime @default(now())
+
+  @@index([patientId, date])
+}
+
+/// Prescrição de exercícios (rotina) para o paciente
+model Prescription {
+  id           String             @id @default(cuid())
+  patientId    String
+  patient      Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  title        String
+  frequency    String?
+  homeGuidance String?
+  active       Boolean            @default(true)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  items        PrescriptionItem[]
+}
+
+/// Exercício prescrito, categorizado por aparelho/modalidade
+model PrescriptionItem {
+  id             String       @id @default(cuid())
+  prescriptionId String
+  prescription   Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  apparatus      String
+  exerciseName   String
+  sets           Int?
+  reps           String?
+  load           String?
+  notes          String?
+  order          Int          @default(0)
+}
+
+/// Biblioteca de exercícios (sugestões na prescrição)
+model Exercise {
+  id          String  @id @default(cuid())
+  name        String
+  apparatus   String
+  description String?
+
+  @@unique([name, apparatus])
+}

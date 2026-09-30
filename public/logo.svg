@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Espaço Cativar Pilates">
+  <circle cx="32" cy="32" r="30" fill="#f5eee3"/>
+  <path d="M45 16.5A21 21 0 1 0 45 47.5" fill="none" stroke="#a86b45" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="37" cy="20" r="3.6" fill="#c9a97a"/>
+  <path d="M22 42c5-2 8-7 12-14 2-3.5 5-4.5 8-3" fill="none" stroke="#8a847e" stroke-width="3" stroke-linecap="round"/>
+  <path d="M30 34c3 3 8 5 14 5" fill="none" stroke="#c9a97a" stroke-width="3" stroke-linecap="round"/>
+</svg>
